@@ -5,6 +5,15 @@ let CANVAS=null;
 let CONTEXT=null;
 
 function main() {
+    // Define constraints for looking for media device
+    const constraints = {
+        video: {
+            facingMode: {
+                exact: 'environment'
+            }
+        }
+    }
+
     // Define canvas with myCanvas which is defined in the HTML
     CANVAS = document.getElementById("myCanvas");
     CONTEXT = CANVAS.getContext("2d");

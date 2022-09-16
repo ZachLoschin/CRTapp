@@ -8,9 +8,7 @@ function main() {
     // Define constraints for looking for media device
     const constraints = {
         video: {
-            facingMode: {
-                exact: 'environment'
-            }
+            facingMode: "environment"
         }
     }
 

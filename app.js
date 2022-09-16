@@ -1,95 +1,48 @@
-feather.replace();
+// Define global variables 
 
-const controls = document.querySelector('.controls');
-const cameraOptions = document.querySelector('.video-options>select');
-const video = document.querySelector('video');
-const canvas = document.querySelector('canvas');
-const screenshotImage = document.querySelector('img');
-const buttons = [...controls.querySelectorAll('button')];
-let streamStarted = false;
+let VIDEO=null;
+let CANVAS=null;
+let CONTEXT=null;
 
-const [play, pause, screenshot] = buttons;
+function main() {
 
-const constraints = {
-  video: {
-    width: {
-      min: 1280,
-      ideal: 1920,
-      max: 2560,
-    },
-    height: {
-      min: 720,
-      ideal: 1080,
-      max: 1440
-    },
-  }
-};
+    // Define canvas with myCanvas which is defined in the HTML
+    CANVAS = document.getElementById("myCanvas");
+    CONTEXT = CANVAS.getContext("2d");
 
-const getCameraSelection = async () => {
-  const devices = await navigator.mediaDevices.enumerateDevices();
-  const videoDevices = devices.filter(device => device.kind === 'videoinput');
-  const options = videoDevices.map(videoDevice => {
-    return `<option value="${videoDevice.deviceId}">${videoDevice.label}</option>`;
-  });
-  cameraOptions.innerHTML = options.join('');
-};
+    // Create the canvas size
+    CANVAS.width=window.innerWidth;
+    CANVAS.height=window.innerHeight;
 
-play.onclick = () => {
-  if (streamStarted) {
-    video.play();
-    play.classList.add('d-none');
-    pause.classList.remove('d-none');
-    return;
-  }
-  if ('mediaDevices' in navigator && navigator.mediaDevices.getUserMedia) {
-    const updatedConstraints = {
-      ...constraints,
-      deviceId: {
-        exact: cameraOptions.value
-      }
-    };
-    startStream(updatedConstraints);
-  }
-};
+    // Ask for access to video device
+    let promise=navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: { exact: "environment" }
+        }
+      });
 
-const startStream = async (constraints) => {
-  const stream = await navigator.mediaDevices.getUserMedia(constraints);
-  handleStream(stream);
-};
+    // After getting acces to video device
+    promise.then(function(signal){
+        // Attach the video element to the VIDEO and give it the signal
+        VIDEO=document.createElement("video");
+        //VIDEO.setAttribute("playsinline", true);
+        VIDEO.srcObject=signal;
+        VIDEO.play();
 
-const handleStream = (stream) => {
-  video.srcObject = stream;
-  play.classList.add('d-none');
-  pause.classList.remove('d-none');
-  screenshot.classList.remove('d-none');
-  streamStarted = true;
-};
+        // When video data is available, update it on the canvas
+        VIDEO.onloadeddata = function() {
+            updateCanvas();
+        }
 
-getCameraSelection();
+    }).catch(function(err){
+        alert("Camera error; "+err)
+    })
+}
 
-cameraOptions.onchange = () => {
-  const updatedConstraints = {
-    ...constraints,
-    deviceId: {
-      exact: cameraOptions.value
-    }
-  };
-  startStream(updatedConstraints);
-};
+// Function to update the canvas
+function updateCanvas() {
+    // Draws the image to the canvas starting at coord(0,0) aka the topleft
+    CONTEXT.drawImage(VIDEO,0,0);
 
-const pauseStream = () => {
-  video.pause();
-  play.classList.remove('d-none');
-  pause.classList.add('d-none');
-};
-
-const doScreenshot = () => {
-  canvas.width = video.videoWidth;
-  canvas.height = video.videoHeight;
-  canvas.getContext('2d').drawImage(video, 0, 0);
-  screenshotImage.src = canvas.toDataURL('image/webp');
-  screenshotImage.classList.remove('d-none');
-};
-
-pause.onclick = pauseStream;
-screenshot.onclick = doScreenshot;
+    window.requestAnimationFrame(updateCanvas);
+}

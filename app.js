@@ -16,9 +16,7 @@ function main() {
 
     // Ask for access to video device
     let promise=navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: { exact: "environment" }
-        }
+        video: true
       });
 
     // After getting acces to video device

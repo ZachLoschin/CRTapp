@@ -20,7 +20,7 @@ function main() {
     promise.then(function(signal){
         // Attach the video element to the VIDEO and give it the signal
         VIDEO=document.createElement("video");
-        VIDEO.setAttribute("playsinline", true);
+        //VIDEO.setAttribute("playsinline", true);
         VIDEO.srcObject=signal;
         VIDEO.play();
 

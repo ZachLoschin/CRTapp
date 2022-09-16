@@ -14,7 +14,7 @@ function main() {
     CANVAS.height=window.innerHeight;
 
     // Ask for access to video device
-    let promise=navigator.mediaDevices.getUserMedia({video:true});
+    let promise=navigator.mediaDevices.getUserMedia({video:true, facingMode: "environment"});
 
     // After getting acces to video device
     promise.then(function(signal){

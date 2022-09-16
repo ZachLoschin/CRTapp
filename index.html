@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My first website</title>
+  <link rel="stylesheet" href="main.css">
+</head>
+<body>
+    <video id="video" width="640" height="480" autoplay></video>
+    <button id="snap">Button Text</button>
+    <canvas id="canvas" width="640" height="480"></canvas>
+    <script>
+        // Define the video object
+let canvas = document.querySelector("#canvas");
+let contect = canvas.getContext("2d");
+let video = document.querySelector("#video");
+// If there are media devices and we can see them...
+if(navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+    navigator.mediaDevices.getUserMedia({ video: true}).then((stream) => {
+        video.srcObject = stream;
+        video.play();
+    })
+}
+    </script>
+</body>
+</html>

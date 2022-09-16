@@ -7,11 +7,8 @@ let CONTEXT=null;
 function main() {
     // Define constraints for looking for media device
     const constraints = {
-        video: {
-            facingMode: {
-                exact: 'environment'
-            }
-        }
+        video: true,
+        
     }
 
     // Define canvas with myCanvas which is defined in the HTML

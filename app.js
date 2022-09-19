@@ -52,49 +52,63 @@ function main() {
     const select = document.getElementById('select');
     let currentStream;
     
+    // Stops current source of stream
     function stopMediaTracks(stream) {
       stream.getTracks().forEach(track => {
         track.stop();
       });
     }
     
+    // Function to detect video devices and add them to the select node
     function gotDevices(mediaDevices) {
       select.innerHTML = '';
-      select.appendChild(document.createElement('option'));
-      let count = 1;
+      select.appendChild(document.createElement('option'));  // adds option to select
+      let count = 1;  // For making device labels
+
+      // Goes through each media device
       mediaDevices.forEach(mediaDevice => {
+        // Sorts by type videoinput
         if (mediaDevice.kind === 'videoinput') {
-          const option = document.createElement('option');
-          option.value = mediaDevice.deviceId;
-          const label = mediaDevice.label || `Camera ${count++}`;
-          const textNode = document.createTextNode(label);
-          option.appendChild(textNode);
-          select.appendChild(option);
+          const option = document.createElement('option');  // Creates new option for the mediaDevice
+          option.value = mediaDevice.deviceId;  // Sets the option value to the device ID
+          const label = mediaDevice.label || `Camera ${count++}`;  // Creates label of the mediaDevice prebuilt label, or calls it device #_
+          const textNode = document.createTextNode(label);  // Creates a text node using the label
+          option.appendChild(textNode);  // Adds the textNode to the option
+          select.appendChild(option);  // Adds the option to the select object
         }
       });
     }
     
     button.addEventListener('click', event => {
+        // If currentStream is defined, stop the currentStream
       if (typeof currentStream !== 'undefined') {
         stopMediaTracks(currentStream);
       }
+      
+      // Initialize videoConstraints holder
       const videoConstraints = {};
+
+      // If the select value is empty, just set facing mode to environment as default, but not exact!
       if (select.value === '') {
         videoConstraints.facingMode = 'environment';
-      } else {
+      } else {  // If the select value exists, set the video constraint to the device ID exactly
         videoConstraints.deviceId = { exact: select.value };
       }
+
+      // Create the constraints to pass to getUserMedia function using above defined video constraints
       const constraints = {
         video: videoConstraints,
         audio: false
       };
+
       navigator.mediaDevices
         .getUserMedia(constraints)
-        .then(stream => {
+        .then(stream => {  // sets the currentStream var to the stream of mediaDevice
           currentStream = stream;
           video.srcObject = stream;
           return navigator.mediaDevices.enumerateDevices();
         })
+        // Displays error msg if error raised
         .then(gotDevices)
         .catch(error => {
           console.error(error);

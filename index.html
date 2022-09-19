@@ -5,24 +5,36 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Camera App</title>
+  <title>CRT Test</title>
   <link rel="stylesheet" href="main.css">
   <script src="app.js"></script>
 </head>
 
 <body onload="main()"> 
     <header>
-        <h1>Camera fun</h1>
+        <h1>Capillary Refill Time Test Site</h1>
+        <h2>Please follow the instructions completely!</h2>
+        <p>1) To Access the Camera press the "Get Camera" button.</p>
+        <p>- To switch the camera, select a camera from the dropdown menu and press the "Get Camera" button.</p>
+        <p>2) Position the pad of the patients pointer finger (or forehead) in the center of the video preview.</p>
+        <p>3) Press the "Calibrate" button while holding the camera as still as possible. Await further instruction.</p>
+        <p>4) After successful calibration, press the "Begin Test" button and squeeze the patients finger. Await further instruction.</p>
+        <p>5) When instructed, release the patients finger and quickly move your hand out of frame. Await further instruction.</p>
+        <p>6) After indication that the test has been complete, relax!</p>
+        <br></br>
       </header>
     
       <main>
         <div class="controls">
-          <button id="button">Get camera</button>
+          <button id="button">Get Camera</button>
+          <button id="Callibration_Button">Callibrate</button>
+          <button id="Test_Button">Begin Test</button>
           <select id="select">
             <option></option>
           </select>
         </div>
-    
+        
+        <p>Video Display: </p>
         <video id="video" autoplay playsinline></video>
       </main>
     

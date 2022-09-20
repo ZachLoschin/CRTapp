@@ -4,6 +4,7 @@ function main() {
     const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
     const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
     const still_canvas = document.getElementById("Still_Canvas");
+    rgb_label = document.getElementById("RGB Val");
     let currentStream;
     
     // Stops current source of stream
@@ -31,7 +32,8 @@ function main() {
 
       // Take the average of the now RGB array
       const average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
-      console.log(imgArray);
+      console.log(average);
+      rgb_label.innerHTML = average;
 
     };
     

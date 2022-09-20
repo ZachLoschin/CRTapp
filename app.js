@@ -31,9 +31,9 @@ function main() {
       // }
 
       // Take the average of the now RGB array
-      const average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
-      console.log(average);
-      rgb_label.innerHTML = average;
+      const RGBA_average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
+      const RGB_average = ((RGBA_average * imgArray.length) - (255*imgArray.length / 4)) / (imgArray.length-(imgArray.length/4));
+      rgb_label.innerHTML = RGB_average;
 
     };
     

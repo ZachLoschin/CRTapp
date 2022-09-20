@@ -1,55 +1,9 @@
-// // Define global variables 
-
-// let VIDEO=null;
-// let CANVAS=null;
-// let CONTEXT=null;
-
-// function main() {
-
-//     // Define canvas with myCanvas which is defined in the HTML
-//     CANVAS = document.getElementById("myCanvas");
-//     CONTEXT = CANVAS.getContext("2d");
-
-//     // Create the canvas size
-//     CANVAS.width=window.innerWidth;
-//     CANVAS.height=window.innerHeight;
-
-//     // Ask for access to video device
-//     let promise=navigator.mediaDevices.getUserMedia({video:true});
-    
-//     // After getting acces to video device
-//     promise.then(function(signal){
-//         const devices = navigator.mediaDevices.enumerateDevices()
-//         console.log(devices);
-
-//         // Attach the video element to the VIDEO and give it the signal
-//         VIDEO=document.createElement("video");
-//         //VIDEO.setAttribute("playsinline", true); // Maybe not needed
-//         VIDEO.srcObject=signal;
-//         VIDEO.play();
-
-//         // When video data is available, update it on the canvas
-//         VIDEO.onloadeddata = function() {
-//             updateCanvas();
-//         }
-
-//     }).catch(function(err){
-//         alert("Camera error; "+err)
-//     })
-// }
-
-// // Function to update the canvas
-// function updateCanvas() {
-//     // Draws the image to the canvas starting at coord(0,0) aka the topleft
-//     CONTEXT.drawImage(VIDEO,0,0);
-
-//     window.requestAnimationFrame(updateCanvas);
-// }
-
 function main() {
-    const video = document.getElementById('video');
-    const button = document.getElementById('button');
-    const select = document.getElementById('select');
+    const video = document.getElementById('video');  // links video to video object in html
+    const button = document.getElementById('button');  // links button to button object in html for starting camera
+    const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
+    const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
+    const still_canvas = document.getElementById("Still_Canvas");
     let currentStream;
     
     // Stops current source of stream
@@ -58,6 +12,28 @@ function main() {
         track.stop();
       });
     }
+
+    // Gets average RGB data from an RGBA array
+    function GetAverageRGB(imgArray) {
+      // Set all obacity values to -1
+      // for(i=imgArray.length; i>0; i-=1) {
+      //   if(i % 4 === 3) {
+      //     imgArray[i] = -1;
+      //   }
+      // }
+
+      // // Remove all -1 indices
+      // for(i=0; i<imgArray.length; i+=1) {
+      //   if(imgArray[i] === -1) {
+      //     imgArray.splice(i, 1);
+      //   }
+      // }
+
+      // Take the average of the now RGB array
+      const average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
+      console.log(imgArray);
+
+    };
     
     // Function to detect video devices and add them to the select node
     function gotDevices(mediaDevices) {
@@ -114,6 +90,18 @@ function main() {
           console.error(error);
         });
     });
-    
+
     navigator.mediaDevices.enumerateDevices().then(gotDevices);
+
+
+    var still_context = still_canvas.getContext("2d");
+
+    button_capture_still.addEventListener("click", event => {
+      if(typeof currentStream !== "undefined") {
+        still_context.drawImage(video, 0, 0);
+        var still_data = still_context.getImageData(0, 0, 640, 480).data;
+        GetAverageRGB(still_data);
+
+      }
+    })
 }

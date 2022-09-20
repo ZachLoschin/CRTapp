@@ -29,6 +29,7 @@
           <button id="button">Get Camera</button>
           <button id="Callibration_Button">Callibrate</button>
           <button id="Test_Button">Begin Test</button>
+          <button id="Capture_Still">Capture Still</button>
           <select id="select">
             <option></option>
           </select>
@@ -36,6 +37,9 @@
         
         <p>Video Display: </p>
         <video id="video" autoplay playsinline></video>
+
+        <p>Captured Image:</p>
+        <canvas id="Still_Canvas", width="640", height="480"></canvas>
       </main>
     
       <script src="./app.js"></script>

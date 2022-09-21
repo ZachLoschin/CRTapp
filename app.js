@@ -4,7 +4,10 @@ function main() {
     const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
     const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
     const still_canvas = document.getElementById("Still_Canvas");
+    const callibration_button = document.getElementById("Callibration_Button");
     rgb_label = document.getElementById("RGB Val");
+    rgb_cali_min = document.getElementById("RGB Calbiration Minimum");
+    rgb_cali_max = document.getElementById("RGB Calibration Maximum");
     let currentStream;
     
     // Stops current source of stream
@@ -16,25 +19,60 @@ function main() {
 
     // Gets average RGB data from an RGBA array
     function GetAverageRGB(imgArray) {
-      // Set all obacity values to -1
-      // for(i=imgArray.length; i>0; i-=1) {
-      //   if(i % 4 === 3) {
-      //     imgArray[i] = -1;
-      //   }
-      // }
-
-      // // Remove all -1 indices
-      // for(i=0; i<imgArray.length; i+=1) {
-      //   if(imgArray[i] === -1) {
-      //     imgArray.splice(i, 1);
-      //   }
-      // }
-
       // Take the average of the now RGB array
       const RGBA_average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
       const RGB_average = ((RGBA_average * imgArray.length) - (255*imgArray.length / 4)) / (imgArray.length-(imgArray.length/4));
       rgb_label.innerHTML = RGB_average;
+      return RGB_average;
 
+    };
+
+    // Callibration funciton
+    async function callibrate() {
+      console.log("Callibrating...")
+      var ave_array = [];
+      var count = 0;
+
+      while(count < 35){
+      // Get camera feed every 1/8 second
+      if(typeof currentStream !== "undefined") {
+        still_context.drawImage(video, 0, 0);
+        var still_data = still_context.getImageData(0, 0, 640, 480).data;
+      } else {
+        break;
+      }
+
+      // Calculate average RGB value in canvas
+      var ave = GetAverageRGB(still_data);
+
+      // Store average in an array
+      ave_array.push(ave);
+
+      console.log("Ave stored...");
+      // Wait 1/8 s
+      await new Promise(r => setTimeout(r, 125));
+      count+=1;
+      }
+
+      // Store largest and smallest values in the ave array
+      let minElement = ave_array[0];
+      for(let i = 1; i < 35; i++){
+        if(ave_array[i] < minElement){
+          minElement = ave_array[i];
+        }
+      }
+
+      let maxElement = ave_array[0];
+      for(let i = 1; i < 35; i++){
+        if(ave_array[i] > maxElement){
+          maxElement = ave_array[i];
+        }
+      }
+
+      rgb_cali_min.innerHTML = minElement;
+      rgb_cali_max.innerHTML = maxElement;
+      console.log(minElement);
+      console.log(maxElement);
     };
     
     // Function to detect video devices and add them to the select node
@@ -102,8 +140,10 @@ function main() {
       if(typeof currentStream !== "undefined") {
         still_context.drawImage(video, 0, 0);
         var still_data = still_context.getImageData(0, 0, 640, 480).data;
-        GetAverageRGB(still_data);
-
       }
+    })
+
+    callibration_button.addEventListener("click", event => {
+      callibrate();
     })
 }

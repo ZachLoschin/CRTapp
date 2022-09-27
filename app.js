@@ -1,15 +1,22 @@
 function main() {
+    const testButton = document.getElementById('Test_Button');
     const video = document.getElementById('video');  // links video to video object in html
     const button = document.getElementById('button');  // links button to button object in html for starting camera
     const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
     const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
     const still_canvas = document.getElementById("Still_Canvas");
+    const diff_canvas = document.getElementById("Diff_Canvas");
     const callibration_button = document.getElementById("Callibration_Button");
+    instruction_label = document.getElementById("Instructions");
     rgb_label = document.getElementById("RGB Val");
     rgb_cali_min = document.getElementById("RGB Calbiration Minimum");
     rgb_cali_max = document.getElementById("RGB Calibration Maximum");
+    motion_label = document.getElementById("motion");
     let currentStream;
     
+    // FUNCTION DEFINITIONS
+
+
     // Stops current source of stream
     function stopMediaTracks(stream) {
       stream.getTracks().forEach(track => {
@@ -29,7 +36,9 @@ function main() {
 
     // Callibration funciton
     async function callibrate() {
-      console.log("Callibrating...")
+      console.log("Callibrating...");
+      instruction_label.innerHTML = "Callibrating... Hold Still Please!";
+
       var ave_array = [];
       var count = 0;
 
@@ -73,8 +82,60 @@ function main() {
       rgb_cali_max.innerHTML = maxElement;
       console.log(minElement);
       console.log(maxElement);
+
+      instruction_label.innerHTML = "Callibration Complete!";
     };
     
+    // Function to draw still image to canvas
+    function drawStill() {
+      if(typeof currentStream !== "undefined") {
+        // still_context.drawImage(video, 0, 0);
+        detect_motion();
+      }
+    }
+
+    // Function for motion detection
+    function detect_motion() {
+      
+      still_context.drawImage(video, 0, 0);
+      
+      // Get the context
+      diffContext = diff_canvas.getContext("2d");
+      still_context = still_canvas.getContext("2d");
+      diffContext.globalCompositeOperation = "difference";
+
+      // Display the image on diff context
+      diffContext.drawImage(video, 0, 0);
+
+      // Calulate the average RGB average of th difference array
+      const ave = GetAverageRGB(diffContext.getImageData(0, 0, 640, 480).data)
+      motion_label.innerHTML = ave;
+
+      // Change context mode to source in in order to reset diff canvas
+      diffContext.globalCompositeOperation = "source in";
+      diffContext.clearRect(0, 0, diff_canvas.clientWidth, diff_canvas.height);
+      diffContext.drawImage(still_canvas, 0, 0);
+
+      return ave;
+    }
+
+   async function run_test() {
+      console.log("hello");
+      var count = 0;  // Var for ommiting first measurement
+      var x = 1;  // Loop var
+
+      while(x === 1) {
+        var mean = detect_motion();
+        console.log(mean);
+        await new Promise(r => setTimeout(r, 125));
+        count = count + 1;
+        if(mean > 20 && count > 1) {
+          x = 0;
+        }
+      }
+    }
+
+
     // Function to detect video devices and add them to the select node
     function gotDevices(mediaDevices) {
       select.innerHTML = '';
@@ -138,7 +199,7 @@ function main() {
 
     button_capture_still.addEventListener("click", event => {
       if(typeof currentStream !== "undefined") {
-        still_context.drawImage(video, 0, 0);
+        drawStill();
         var still_data = still_context.getImageData(0, 0, 640, 480).data;
       }
     })
@@ -146,4 +207,9 @@ function main() {
     callibration_button.addEventListener("click", event => {
       callibrate();
     })
-}
+
+    testButton.addEventListener("click", event => { 
+      run_test();
+    })
+
+} // function main end

@@ -165,7 +165,7 @@ function main() {
         diffContext.drawImage(video, 0, 0);
 
         // Find the difference average
-        var AVE = manualDifference(still_context.getImageData(0, 0, 640, 480).data, still_context.getImageData(0, 0, 640, 480).data);
+        var AVE = manualDifference(diffContext.getImageData(0, 0, 640, 480).data, still_context.getImageData(0, 0, 640, 480).data);
         display_label.innerHTML = AVE;
         console.log(AVE);
 

@@ -12,6 +12,7 @@ function main() {
     rgb_cali_min = document.getElementById("RGB Calbiration Minimum");
     rgb_cali_max = document.getElementById("RGB Calibration Maximum");
     motion_label = document.getElementById("motion");
+    display_label = document.getElementById("Display");
     let currentStream;
     
     // FUNCTION DEFINITIONS
@@ -94,47 +95,106 @@ function main() {
       }
     }
 
-    // Function for motion detection
-    function detect_motion() {
+  //   // Function for motion detection
+  //   function detect_motion(imgA, imgB) {
+  //     // Clear the canvases
+  //     still_canvas.clearRect();
+  //     diff_canvas.clearRect();
+
+  //     // Take initial image
+  //     still_context.drawImage(video, 0, 0);
+
       
-      still_context.drawImage(video, 0, 0);
-      
-      // Get the context
+
+
+  //     // Get the context
+  //     diffContext = diff_canvas.getContext("2d");
+  //     still_context = still_canvas.getContext("2d");
+  //     diffContext.globalCompositeOperation = "difference";
+
+  //     // Display the image on diff context
+  //     diffContext.drawImage(video, 0, 0);
+
+  //     // Calulate the average RGB average of th difference array
+  //     const ave = GetAverageRGB(diffContext.getImageData(0, 0, 640, 480).data)
+  //     motion_label.innerHTML = ave;
+  //     display_label.innerHTML = "AVERAGE TAKEN";
+  //     // Change context mode to source in in order to reset diff canvas
+  //     diffContext.globalCompositeOperation = "source in";
+  //     diffContext.clearRect(0, 0, diff_canvas.clientWidth, diff_canvas.height);
+  //     diffContext.drawImage(still_canvas, 0, 0);
+
+  //     return ave;
+  //   }
+
+  //  async function run_test() {
+  //     console.log("hello");
+  //     var count = 0;  // Var for ommiting first measurement
+  //     var x = 1;  // Loop var
+
+  //     while(x === 1) {
+  //       var mean = detect_motion();
+  //       console.log(mean);
+  //       await new Promise(r => setTimeout(r, 125));
+  //       count = count + 1;
+  //       if(mean > 20 && count > 1) {
+  //         x = 0;
+  //       }
+  //     }
+  //   }
+
+    async function motionTest() {
       diffContext = diff_canvas.getContext("2d");
       still_context = still_canvas.getContext("2d");
-      diffContext.globalCompositeOperation = "difference";
 
-      // Display the image on diff context
-      diffContext.drawImage(video, 0, 0);
 
-      // Calulate the average RGB average of th difference array
-      const ave = GetAverageRGB(diffContext.getImageData(0, 0, 640, 480).data)
-      motion_label.innerHTML = ave;
+      still_context.clearRect(0, 0, 640, 480);
+      diffContext.clearRect(0, 0, 640, 480);
 
-      // Change context mode to source in in order to reset diff canvas
-      diffContext.globalCompositeOperation = "source in";
-      diffContext.clearRect(0, 0, diff_canvas.clientWidth, diff_canvas.height);
-      diffContext.drawImage(still_canvas, 0, 0);
+      // Take first image
+      still_context.drawImage(video, 0, 0);
+      
+      // Wait 1/8 second
+      await new Promise(r => setTimeout(r, 125));
+
+      // While no motion
+      var x = 1;
+
+      while(x===1) {
+        // Take new image
+        diffContext.drawImage(video, 0, 0);
+
+        // Find the difference average
+        var AVE = manualDifference(still_context.getImageData(0, 0, 640, 480).data, still_context.getImageData(0, 0, 640, 480).data);
+        display_label.innerHTML = AVE;
+        console.log(AVE);
+
+        // Check if AVE greater than threshold
+        if(AVE>15) {
+          x=0;
+        }
+
+        // Draw diff canvas to still canvas
+        still_context.drawImage(diff_canvas, 0, 0);
+
+        // Wait 1/8 second
+        await new Promise(r => setTimeout(r, 125));
+
+      }
+
+
+    }
+    // Manual function to subtract arrays and average
+    function manualDifference(imgA, imgB) {
+
+      // Subtract elementwise the two arrays
+      var imgC = imgA.map((n, i) => n - imgB[i]);
+
+      // Take average of array
+      var ave = GetAverageRGB(imgC) + 85;
 
       return ave;
     }
-
-   async function run_test() {
-      console.log("hello");
-      var count = 0;  // Var for ommiting first measurement
-      var x = 1;  // Loop var
-
-      while(x === 1) {
-        var mean = detect_motion();
-        console.log(mean);
-        await new Promise(r => setTimeout(r, 125));
-        count = count + 1;
-        if(mean > 20 && count > 1) {
-          x = 0;
-        }
-      }
-    }
-
 
     // Function to detect video devices and add them to the select node
     function gotDevices(mediaDevices) {
@@ -209,7 +269,7 @@ function main() {
     })
 
     testButton.addEventListener("click", event => { 
-      run_test();
+      motionTest();
     })
 
 } // function main end

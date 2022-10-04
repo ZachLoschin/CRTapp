@@ -4,6 +4,7 @@ function main() {
     const button = document.getElementById('button');  // links button to button object in html for starting camera
     const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
     const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
+    const button_get_curve = document.getElementById("Get_Curve");
     const still_canvas = document.getElementById("Still_Canvas");
     const diff_canvas = document.getElementById("Diff_Canvas");
     const callibration_button = document.getElementById("Callibration_Button");
@@ -14,7 +15,7 @@ function main() {
     motion_label = document.getElementById("motion");
     display_label = document.getElementById("Display");
     let currentStream;
-    
+
     // FUNCTION DEFINITIONS
 
 
@@ -95,54 +96,6 @@ function main() {
       }
     }
 
-  //   // Function for motion detection
-  //   function detect_motion(imgA, imgB) {
-  //     // Clear the canvases
-  //     still_canvas.clearRect();
-  //     diff_canvas.clearRect();
-
-  //     // Take initial image
-  //     still_context.drawImage(video, 0, 0);
-
-      
-
-
-  //     // Get the context
-  //     diffContext = diff_canvas.getContext("2d");
-  //     still_context = still_canvas.getContext("2d");
-  //     diffContext.globalCompositeOperation = "difference";
-
-  //     // Display the image on diff context
-  //     diffContext.drawImage(video, 0, 0);
-
-  //     // Calulate the average RGB average of th difference array
-  //     const ave = GetAverageRGB(diffContext.getImageData(0, 0, 640, 480).data)
-  //     motion_label.innerHTML = ave;
-  //     display_label.innerHTML = "AVERAGE TAKEN";
-  //     // Change context mode to source in in order to reset diff canvas
-  //     diffContext.globalCompositeOperation = "source in";
-  //     diffContext.clearRect(0, 0, diff_canvas.clientWidth, diff_canvas.height);
-  //     diffContext.drawImage(still_canvas, 0, 0);
-
-  //     return ave;
-  //   }
-
-  //  async function run_test() {
-  //     console.log("hello");
-  //     var count = 0;  // Var for ommiting first measurement
-  //     var x = 1;  // Loop var
-
-  //     while(x === 1) {
-  //       var mean = detect_motion();
-  //       console.log(mean);
-  //       await new Promise(r => setTimeout(r, 125));
-  //       count = count + 1;
-  //       if(mean > 20 && count > 1) {
-  //         x = 0;
-  //       }
-  //     }
-  //   }
-
     async function motionTest() {
       diffContext = diff_canvas.getContext("2d");
       still_context = still_canvas.getContext("2d");
@@ -152,6 +105,7 @@ function main() {
       diffContext.clearRect(0, 0, 640, 480);
 
       // Take first image
+
       still_context.drawImage(video, 0, 0);
       
       // Wait 1/8 second
@@ -195,6 +149,46 @@ function main() {
 
       return ave;
     }
+
+    async function getCurve() {
+      // For 10 (100 pictures at 10 Hz sampling) seconds take pictures and get their RGB values
+      still_context = still_canvas.getContext("2d");
+      let count = 0;
+      let curve = [];
+
+      while(count <= 100){
+        // Get image
+        still_context.drawImage(video, 0, 0);
+
+        // Get average RGB
+        let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
+
+        // Append to array
+        curve.push(ave);
+
+        console.log(count);
+        console.log(ave);
+        // Await 1/10 of a second
+        
+        await new Promise(r => setTimeout(r, 100));
+
+        count+=1;
+        
+      }
+
+      var toPlot = {
+        x: count,
+        y: curve,
+        type: 'scatter'
+      };
+
+    var data = [toPlot];
+    
+    Plotly.newPlot('myDiv', data);
+
+      return curve;
+    }
+
 
     // Function to detect video devices and add them to the select node
     function gotDevices(mediaDevices) {
@@ -271,5 +265,9 @@ function main() {
     testButton.addEventListener("click", event => { 
       motionTest();
     })
+
+    button_get_curve.addEventListener("click", event => {
+      getCurve();
+    })    
 
 } // function main end

@@ -8,6 +8,13 @@
   <title>CRT Test</title>
   <link rel="stylesheet" href="main.css">
   <script src="app.js"></script>
+  <script src="https://code.jscharting.com/2.9.0/jscharting.js"></script>
+  <script src="https://cdn.plot.ly/plotly-2.14.0.min.js"></script>
+  
+  <py-env>
+    - matplotlib
+  </py-env>
+
 </head>
 
 <body onload="main()"> 
@@ -27,6 +34,8 @@
       <main>
         <div class="controls">
           <button id="button">Get Camera</button>
+          <button id="Get_Curve">Get Curve</button>
+          <button id="Show_Plot">Show Plot</button>
           <button id="Callibration_Button">Callibrate</button>
           <button id="Test_Button">Begin Test</button>
           <button id="Capture_Still">Capture Still</button>
@@ -38,6 +47,8 @@
         <p>Video Display: </p>
         <video id="video" autoplay playsinline></video>
 
+        <div id="myDiv"></div>
+
         <br></br>
         <label id="Instructions">Instructions</label>
         <label id="Display">Display</label>
@@ -46,8 +57,10 @@
         <label id="RGB Calbiration Minimum">Min</label>
         <label id="RGB Calibration Maximum">Max</label>
         <br></br>
-        <canvas id="Still_Canvas", width="640", height="480"></canvas> 
-        <canvas id = "Diff_Canvas", width="640", height="480"></canvas> 
+        <canvas id="line_chart"></canvas>
+        <canvas id="Still_Canvas", width="640", height="480"></canvas>
+        <canvas id = "Diff_Canvas", width="640", height="480"></canvas>
+        
       </main>
     
       <script src="./app.js"></script>

@@ -1,12 +1,23 @@
 function main() {
-    const video = document.getElementById('video');  // links video to video object in html
-    const button = document.getElementById('button');  // links button to button object in html for starting camera
-    const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
-    const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
-    const button_get_curve = document.getElementById("Get_Curve");
-    const still_canvas = document.getElementById("Still_Canvas");
-    const diff_canvas = document.getElementById("Diff_Canvas");
-    instruction_label = document.getElementById("Instructions");
+  const testButton = document.getElementById('Test_Button');
+  const video = document.getElementById('video');  // links video to video object in html
+  const button = document.getElementById('button');  // links button to button object in html for starting camera
+  const select = document.getElementById('select');  // links select menu to select object in html for selecting which camera to use
+  const button_capture_still = document.getElementById("Capture_Still");  // Button for capturing still image of the current stream
+  const button_get_curve = document.getElementById("Get_Curve");
+  const still_canvas = document.getElementById("Still_Canvas");
+  const diff_canvas = document.getElementById("Diff_Canvas");
+  const callibration_button = document.getElementById("Callibration_Button");
+  instruction_label = document.getElementById("Instructions");
+  rgb_label = document.getElementById("RGB Val");
+  rgb_cali_min = document.getElementById("RGB Calbiration Minimum");
+  rgb_cali_max = document.getElementById("RGB Calibration Maximum");
+  motion_label = document.getElementById("motion");
+  display_label = document.getElementById("Display");
+  let currentStream;
+
+  // FUNCTION DEFINITIONS
+
 
   // Stops current source of stream
   function stopMediaTracks(stream) {
@@ -20,11 +31,63 @@ function main() {
     // Take the average of the now RGB array
     const RGBA_average = imgArray.reduce((a, b) => a + b, 0) / imgArray.length;
     const RGB_average = ((RGBA_average * imgArray.length) - (255*imgArray.length / 4)) / (imgArray.length-(imgArray.length/4));
+    rgb_label.innerHTML = RGB_average;
     return RGB_average;
 
   };
 
+  // Callibration funciton
+  async function callibrate() {
+    console.log("Callibrating...");
+    instruction_label.innerHTML = "Callibrating... Hold Still Please!";
 
+    var ave_array = [];
+    var count = 0;
+
+    while(count < 35){
+    // Get camera feed every 1/8 second
+    if(typeof currentStream !== "undefined") {
+      still_context.drawImage(video, 0, 0);
+      var still_data = still_context.getImageData(0, 0, 640, 480).data;
+    } else {
+      break;
+    }
+
+    // Calculate average RGB value in canvas
+    var ave = GetAverageRGB(still_data);
+
+    // Store average in an array
+    ave_array.push(ave);
+
+    console.log("Ave stored...");
+    // Wait 1/8 s
+    await new Promise(r => setTimeout(r, 125));
+    count+=1;
+    }
+
+    // Store largest and smallest values in the ave array
+    let minElement = ave_array[0];
+    for(let i = 1; i < 35; i++){
+      if(ave_array[i] < minElement){
+        minElement = ave_array[i];
+      }
+    }
+
+    let maxElement = ave_array[0];
+    for(let i = 1; i < 35; i++){
+      if(ave_array[i] > maxElement){
+        maxElement = ave_array[i];
+      }
+    }
+
+    rgb_cali_min.innerHTML = minElement;
+    rgb_cali_max.innerHTML = maxElement;
+    console.log(minElement);
+    console.log(maxElement);
+
+    instruction_label.innerHTML = "Callibration Complete!";
+  };
+  
   // Function to draw still image to canvas
   function drawStill() {
     if(typeof currentStream !== "undefined") {
@@ -33,8 +96,50 @@ function main() {
     }
   }
 
-// Manual function to subtract arrays and average
-function manualDifference(imgA, imgB) {
+  async function motionTest() {
+    diffContext = diff_canvas.getContext("2d");
+    still_context = still_canvas.getContext("2d");
+
+
+    still_context.clearRect(0, 0, 640, 480);
+    diffContext.clearRect(0, 0, 640, 480);
+
+    // Take first image
+
+    still_context.drawImage(video, 0, 0);
+    
+    // Wait 1/8 second
+    await new Promise(r => setTimeout(r, 125));
+
+    // While no motion
+    var x = 1;
+
+    while(x===1) {
+      // Take new image
+      diffContext.drawImage(video, 0, 0);
+
+      // Find the difference average
+      var AVE = manualDifference(diffContext.getImageData(0, 0, 640, 480).data, still_context.getImageData(0, 0, 640, 480).data);
+      display_label.innerHTML = AVE;
+      console.log(AVE);
+
+      // Check if AVE greater than threshold
+      if(AVE>15) {
+        x=0;
+      }
+
+      // Draw diff canvas to still canvas
+      still_context.drawImage(diff_canvas, 0, 0);
+
+      // Wait 1/8 second
+      await new Promise(r => setTimeout(r, 125));
+
+    }
+
+
+  }
+  // Manual function to subtract arrays and average
+  function manualDifference(imgA, imgB) {
 
     // Subtract elementwise the two arrays
     var imgC = imgA.map((n, i) => n - imgB[i]);
@@ -46,67 +151,20 @@ function manualDifference(imgA, imgB) {
   }
 
   async function getCurve() {
-    // For 15 (150 pictures at 10 Hz sampling) seconds take pictures and get their RGB values
+    // For 10 (100 pictures at 10 Hz sampling) seconds take pictures and get their RGB values
     still_context = still_canvas.getContext("2d");
     let count = 0;
     let curve = [];
 
-    // Start instructions
-    instruction_label.innerHTML = "Hold camera still above patients finger";
-    await new Promise(r => setTimeout(r, 2000));
-    instruction_label.innerHTML = "Hold camera stably above in 3..";
-    await new Promise(r => setTimeout(r, 1000));
-    instruction_label.innerHTML = "2..";
-    await new Promise(r => setTimeout(r, 1000));
-    instruction_label.innerHTML = "1..";
-    await new Promise(r => setTimeout(r, 1000));
-
-    instruction_label.innerHTML = "Hold above patients finger for 5 seconds.";
-
-
-    while(count <= 150){
-        if(count === 20){
-            console.log("ENTERRRRREEEEEDDDD");
-            instruction_label.innerHtml = "Press into patients finger in 3..";
-        }
-
-        if(count === 30){
-            instruction_label.innerHtml = "Press into patients finger in 2..";
-        }
-
-        if(count === 40){
-            instruction_label.innerHtml = "Press into patients finger in 1..";
-        }
-        if(count === 50){
-            instruction_label.innerHtml = "Press!";
-        }
-        if(count === 70){
-            instruction_label.innerHtml = "Hover above finger in 3..";
-        }
-        if(count === 80){
-            instruction_label.innerHtml = "Hover above finger in 2..";
-        }
-        if(count === 90){
-            instruction_label.innerHtml = "Hover above finger in 1..";
-        }
-        if(count === 100){
-            instruction_label.innerHtml = "Hover!";
-        }
-        if(count === 120){
-            instruction_label.innerHtml = "Test completing in 3..";
-        }
-        if(count === 130){
-            instruction_label.innerHtml = "Test completing in 2..";
-        }
-        if(count === 140){
-            instruction_label.innerHtml = "Test completing in 1..";
-        }
-        
+    while(count <= 100){
       // Get image
       still_context.drawImage(video, 0, 0);
 
       // Get average RGB
       let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
+
+      // Calculate moving average
+
 
       // Append to array
       curve.push(ave);
@@ -119,10 +177,6 @@ function manualDifference(imgA, imgB) {
 
       count+=1;
       
-      if(count === 150){
-        instruction_label.innerHtml = "Test complete!";
-    }
-
     }
 
     // Low pass filter
@@ -139,7 +193,7 @@ function manualDifference(imgA, imgB) {
       type: 'scatter'
     };
 
-    var data = [toPlot];
+  var data = [toPlot];
   
   Plotly.newPlot('myDiv', data);
 
@@ -157,7 +211,6 @@ Plotly.newPlot('myDiv2', lpData);
     return curve;
   }
 
-  
   // Moving average filter function
   function movingAverage(a){
     let moving_avg = new Array(a.length);
@@ -231,11 +284,26 @@ Plotly.newPlot('myDiv2', lpData);
 
   navigator.mediaDevices.enumerateDevices().then(gotDevices);
 
+
   var still_context = still_canvas.getContext("2d");
+
+  button_capture_still.addEventListener("click", event => {
+    if(typeof currentStream !== "undefined") {
+      drawStill();
+      var still_data = still_context.getImageData(0, 0, 640, 480).data;
+    }
+  })
+
+  callibration_button.addEventListener("click", event => {
+    callibrate();
+  })
+
+  testButton.addEventListener("click", event => { 
+    motionTest();
+  })
 
   button_get_curve.addEventListener("click", event => {
     getCurve();
-  })
+  })    
 
-
-} // End main
+} // function main end

@@ -15,7 +15,7 @@
 
 <body onload="main()"> 
     <header>
-        <h1>Capillary Refill Time Test Site -- PAGE IN DEVELOPMENT</h1>
+        <h1>Capillary Refill Time Test Site</h1>
         <h2>Please follow the instructions completely!</h2>
         <p>1) To Access the Camera press the "Get Camera" button.</p>
         <p>- To switch the camera, select a camera from the dropdown menu and press the "Get Camera" button.</p>
@@ -31,25 +31,37 @@
         <div class="controls">
           <button id="button">Get Camera</button>
           <button id="Get_Curve">Get Curve</button>
+          <button id="Show_Plot">Show Plot</button>
+          <button id="Callibration_Button">Callibrate</button>
+          <button id="Test_Button">Begin Test</button>
+          <button id="Capture_Still">Capture Still</button>
           <select id="select">
             <option></option>
           </select>
         </div>
         
         <p>Video Display: </p>
-        <label id="Instructions">Instructions</label>
         <video id="video" autoplay playsinline></video>
 
         <div id="myDiv"></div>
         <div id="myDiv2"></div>
 
+
+        <br></br>
+        <label id="Instructions">Instructions</label>
+        <label id="Display">Display</label>
+        <label id="motion">Motion</label>
+        <label id="RGB Val">RGB Value</label>
+        <label id="RGB Calbiration Minimum">Min</label>
+        <label id="RGB Calibration Maximum">Max</label>
+        <br></br>
         <canvas id="line_chart"></canvas>
         <canvas id="Still_Canvas", width="640", height="480"></canvas>
         <canvas id = "Diff_Canvas", width="640", height="480"></canvas>
         
       </main>
     
-      <script src="./testApp.js"></script>
+      <script src="./app.js"></script>
     </body>
 </html>
 

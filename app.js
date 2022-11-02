@@ -155,7 +155,7 @@ async function getCurve() {
   // Splice curve
   refillCurve = derCurve.slice(crtArray[0], crtArray[1]+1);
 
-  let time = (crtArray[1] - crtArray[0]) * 10  // Convert to seconds
+  let time = (crtArray[1] - crtArray[0]) / 10  // Convert to seconds
   instruction_label.innerHTML = time;
 
   // Plotting raw

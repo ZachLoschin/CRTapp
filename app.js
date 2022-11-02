@@ -135,7 +135,7 @@ async function getCurve() {
     newNewCount+=1;
   }
 
-  console.log("LSAT LOOP FINISHED!!");
+  console.log("LAST LOOP FINISHED!!");
   instruction_label.innerHTML = "Test complete, generating graphs";
   await new Promise(r => setTimeout(r, 50));
 
@@ -145,6 +145,15 @@ async function getCurve() {
   console.log(curve);
   console.log("\n");
   console.log(lpCurve);
+
+  // Derivative of lp filtered curve
+  derCurve = derivative(lpCurve);
+
+  // Calculate CRT based on derCurve
+  let crtArray = CRT(derCurve);
+
+  // Splice curve
+  refillCurve = derCurve.slice(crtArray[0], crtArray[1]+1);
 
   // Plotting raw
   var toPlot = {
@@ -168,7 +177,28 @@ var lpData= [toPlot2];
 
 Plotly.newPlot('myDiv2', lpData);
 
-  return curve;
+// Plotting derivative
+var toPlot3 = {
+  x: count,
+  y: derCurve,
+  type: 'scatter'
+};
+
+var derData= [toPlot3];
+
+Plotly.newPlot('myDiv3', derData);
+
+// Plotting refill curve
+var toPlot4 = {
+  x: count,
+  y: refillCurve,
+  type: 'scatter'
+};
+
+var curveData= [toPlot4];
+
+Plotly.newPlot('myDiv4', curveData);
+
 }
 
 
@@ -185,6 +215,48 @@ function movingAverage(a){
   }
 
   return moving_avg;
+}
+
+function derivative(inpArray) {
+  let derArray = new Array(inpArray.length);
+
+  for(let i = 0; i<inpArray.length-1; i++) {
+    derArray[i] = inpArray[i+1] - inpArray[i]  // Slope calculation, Y2-Y1 = 1 in all cases
+  }
+
+  return derArray;
+
+}
+
+function CRT(deri) {
+  // Function to detect negative point in curve to start timer
+  // Also detects when the derivative goes to zero that signifies end of CRT
+  detectionZone = deri.slice(50,-1);
+
+  // Variables to keep track
+  let start=-1;
+  let end=-1;
+
+  // Detection loop
+  for(let i = 0; i<detectionZone.length; i++) {
+    if(detectionZone[i]<-0.5) {
+      // Set starting point when negative slope detected for first time
+      if(start === -1) {
+        start = i;
+      }
+    }
+
+    // Set end point when negative slope stops for the first time
+    if(detectionZone[i]>-0.2 && start !==-1) {
+      if(end === -1) {
+        end = i;
+      }
+    }
+  }
+
+  timeValues = [start, end];
+
+  return timeValues;
 }
 
 // Function to detect video devices and add them to the select node

@@ -150,7 +150,7 @@ async function getCurve() {
   derCurve = derivative(lpCurve);
 
   // Calculate CRT based on derCurve
-  let crtArray = CRT(derCurve);
+  let crtArray = garyCRT(derCurve);
 
   // Splice curve
   refillCurve = derCurve.slice(crtArray[0], crtArray[1]+1);
@@ -255,6 +255,36 @@ function CRT(deri) {
         end = i;
       }
     }
+  }
+
+  function garyCRT(deri) {
+    // Slice the derivative array during the refill time zone
+    let detectionZone = deri.slice(50,-1);
+
+    // Detect the peak point (aka the minimum of of the array)
+    let min = min(detectionZone);
+    
+    // Set threshold of 0.05 * min value
+    let threshold = 0.05 * min;
+
+    // Storage variables
+    let start = -1;
+    let end = -1;
+
+    // Find 5% value at front and end
+    for(let i=0; i<detectionZone.length; i++) {
+      if(detectionZone[i] <= threshold && start === -1) {
+        start = i;
+      }
+    }
+
+    for(let i=start; i<detectionZone.length; i++) {
+      if(detectionZone[i] >= threshold && end === -1) {
+        end = i;
+      }
+    }
+
+    return [start, end];
   }
 
   timeValues = [start, end];

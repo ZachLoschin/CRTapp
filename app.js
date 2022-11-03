@@ -153,7 +153,8 @@ async function getCurve() {
   let crtArray = garyCRT(derCurve);
 
   // Splice curve
-  refillCurve = derCurve.slice(crtArray[0], crtArray[1]+1);
+  let detectionZone = deri.slice(50,-1);
+  refillCurve = detectionZone.slice(crtArray[0], detectionZone[1]+1);
 
   let time = (crtArray[1] - crtArray[0]) / 10  // Convert to seconds
   instruction_label.innerHTML = time;
@@ -237,7 +238,7 @@ function derivative(inpArray) {
     let detectionZone = deri.slice(50,-1);
 
     // Detect the peak point (aka the minimum of of the array)
-    let min = min(detectionZone);
+    let min = Math.min.apply(null, detectionZone);
     
     // Set threshold of 0.05 * min value
     let threshold = 0.05 * min;

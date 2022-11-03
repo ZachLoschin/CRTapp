@@ -231,31 +231,6 @@ function derivative(inpArray) {
 
 }
 
-function CRT(deri) {
-  // Function to detect negative point in curve to start timer
-  // Also detects when the derivative goes to zero that signifies end of CRT
-  detectionZone = deri.slice(50,-1);
-
-  // Variables to keep track
-  let start=-1;
-  let end=-1;
-
-  // Detection loop
-  for(let i = 0; i<detectionZone.length; i++) {
-    if(detectionZone[i]<-0.5) {
-      // Set starting point when negative slope detected for first time
-      if(start === -1) {
-        start = i;
-      }
-    }
-
-    // Set end point when negative slope stops for the first time
-    if(detectionZone[i]>-0.2 && start !==-1) {
-      if(end === -1) {
-        end = i;
-      }
-    }
-  }
 
   function garyCRT(deri) {
     // Slice the derivative array during the refill time zone
@@ -287,10 +262,6 @@ function CRT(deri) {
     return [start, end];
   }
 
-  timeValues = [start, end];
-
-  return timeValues;
-}
 
 // Function to detect video devices and add them to the select node
 function gotDevices(mediaDevices) {

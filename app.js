@@ -154,7 +154,8 @@ async function getCurve() {
 
   // Splice curve
   let detectionZone = derCurve.slice(50,-1);
-  refillCurve = detectionZone.slice(crtArray[0], crtArray[1]+1);
+  refillCurve = lpCurve.slice(crtArray[0], crtArray[1]+1);
+  console.log(refillCurve);
 
   let time = (crtArray[1] - crtArray[0]) / 10  // Convert to seconds
   instruction_label.innerHTML = time;

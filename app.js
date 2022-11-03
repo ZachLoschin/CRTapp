@@ -153,8 +153,8 @@ async function getCurve() {
   let crtArray = garyCRT(derCurve);
 
   // Splice curve
-  let detectionZone = deri.slice(50,-1);
-  refillCurve = detectionZone.slice(crtArray[0], detectionZone[1]+1);
+  let detectionZone = derCurve.slice(50,-1);
+  refillCurve = detectionZone.slice(crtArray[0], crtArray[1]+1);
 
   let time = (crtArray[1] - crtArray[0]) / 10  // Convert to seconds
   instruction_label.innerHTML = time;

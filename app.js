@@ -211,12 +211,12 @@ Plotly.newPlot('myDiv4', curveData);
 function movingAverage(a){
   let moving_avg = new Array(a.length);
 
-  for(i = 0; i < 2; i++){
+  for(i = 0; i < 4; i++){
     moving_avg[i] = a[i];
   }
 
-  for(i = 2; i < a.length; i++){
-    moving_avg[i] = (a[i] + a[i-1] + a[i-2]) / 3;
+  for(i = 4; i < a.length; i++){
+    moving_avg[i] = (a[i] + a[i-1] + a[i-2] + a[i-3] + a[i-4]) / 5;
   }
 
   return moving_avg;

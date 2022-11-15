@@ -7,6 +7,7 @@ function main() {
   const still_canvas = document.getElementById("Still_Canvas");
   const diff_canvas = document.getElementById("Diff_Canvas");
   instruction_label = document.getElementById("Instructions");
+  raw_array_box = document.getElementById("rawArray");
 
 // Stops current source of stream
 function stopMediaTracks(stream) {
@@ -45,27 +46,36 @@ function manualDifference(imgA, imgB) {
   return ave;
 }
 
-async function getCurve() {
+async function getCurveAbsolute() {
   // For 15 (150 pictures at 10 Hz sampling) seconds take pictures and get their RGB values
   still_context = still_canvas.getContext("2d");
   let count = 0;
   let curve = [];
+  let timeArray = [];
 
   // Start instructions
   instruction_label.innerHTML = "Hold camera still above patients finger";
   await new Promise(r => setTimeout(r, 2000));
-  instruction_label.innerHTML = "Hold camera stably above in 3..";
+  instruction_label.innerHTML = "Press into finger in 3..";
   await new Promise(r => setTimeout(r, 1000));
   instruction_label.innerHTML = "2..";
   await new Promise(r => setTimeout(r, 1000));
   instruction_label.innerHTML = "1..";
   await new Promise(r => setTimeout(r, 1000));
 
-  instruction_label.innerHTML = "Hold above patients finger for 5 seconds.";
+  instruction_label.innerHTML = "Press into patient finger for 5 seconds!";
+  await new Promise(r=> setTimeout(r, 5000));
 
+  instruction_label.innerHTML = "Release in one second";
+  await new Promise(r=> setTimeout(r, 10));
 
-  while(count < 50){
-      
+  let timeInit = Date.now()
+  let timeCurrent = Date.now()
+
+  while(timeCurrent - timeInit < 7000) {
+    // Get current time
+    timeCurrent = Date.now()
+    
     // Get image
     still_context.drawImage(video, 0, 0);
 
@@ -74,95 +84,17 @@ async function getCurve() {
 
     // Append to array
     curve.push(ave);
+    timeArray.push(timeCurrent-timeInit);
 
-    console.log(count);
     console.log(ave);
-    // Await 1/10 of a second
-    
-    await new Promise(r => setTimeout(r, 100));
 
-    count+=1;
   }
 
-  console.log("LOOP ONE ENDED...");
-  instruction_label.innerHTML = "Press into finger!";
-  //await new Promise(r => setTimeout(r, 50));
-
-  let newCount = 0
-  while(newCount <= 50){
-      
-    // Get image
-    still_context.drawImage(video, 0, 0);
-
-    // Get average RGB
-    let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
-
-    // Append to array
-    curve.push(ave);
-
-    console.log(newCount);
-    console.log(ave);
-    // Await 1/10 of a second
-    
-    await new Promise(r => setTimeout(r, 100));
-
-    newCount+=1;
-  }
-
-  console.log("LOOP TWO ENDED...");
-  instruction_label.innerHTML = "Hold above finger!";
-  //await new Promise(r => setTimeout(r, 50));
-
-
-  let newNewCount = 0
-  while(newNewCount <= 50){
-      
-    // Get image
-    still_context.drawImage(video, 0, 0);
-
-    // Get average RGB
-    let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
-
-    // Append to array
-    curve.push(ave);
-
-    console.log(newNewCount);
-    console.log(ave);
-    // Await 1/10 of a second
-    
-    await new Promise(r => setTimeout(r, 100));
-
-    newNewCount+=1;
-  }
-
-  console.log("LAST LOOP FINISHED!!");
-  instruction_label.innerHTML = "Test complete, generating graphs";
-  await new Promise(r => setTimeout(r, 50));
-
-  // Low pass filter
-  lpCurve = movingAverage(curve);
-
-  console.log(curve);
-  console.log("\n");
-  console.log(lpCurve);
-
-  // Derivative of lp filtered curve
-  derCurve = derivative(lpCurve);
-
-  // Calculate CRT based on derCurve
-  let crtArray = garyCRT(derCurve);
-
-  // Splice curve
-  let detectionZone = derCurve.slice(50,-1);
-  refillCurve = lpCurve.slice(crtArray[0], crtArray[1]+1);
-  console.log(refillCurve);
-
-  let time = (crtArray[1] - crtArray[0]) / 10  // Convert to seconds
-  instruction_label.innerHTML = time;
+  instruction_label.innerHTML = "Test Complete!";
 
   // Plotting raw
   var toPlot = {
-    x: count,
+    x: timeArray,
     y: curve,
     type: 'scatter'
   };
@@ -171,41 +103,18 @@ async function getCurve() {
 
 Plotly.newPlot('myDiv', data);
 
-// Plotting low pass filtered
-var toPlot2 = {
-  x: count,
-  y: lpCurve,
-  type: 'scatter'
-};
+console.log(curve);
+console.log(timeArray);
 
-var lpData= [toPlot2];
+// Take derivative
+let derivativeCurve = derivative(curve);
 
-Plotly.newPlot('myDiv2', lpData);
+// Gary CRT
+CRT = garyCRT(derivativeCurve, timeArray);
 
-// Plotting derivative
-var toPlot3 = {
-  x: count,
-  y: derCurve,
-  type: 'scatter'
-};
-
-var derData= [toPlot3];
-
-Plotly.newPlot('myDiv3', derData);
-
-// Plotting refill curve
-var toPlot4 = {
-  x: count,
-  y: refillCurve,
-  type: 'scatter'
-};
-
-var curveData= [toPlot4];
-
-Plotly.newPlot('myDiv4', curveData);
+raw_array_box.value = curve;
 
 }
-
 
 // Moving average filter function
 function movingAverage(a){
@@ -234,7 +143,7 @@ function derivative(inpArray) {
 }
 
 
-  function garyCRT(deri) {
+  function garyCRT(deri, time) {
     // Slice the derivative array during the refill time zone
     let detectionZone = deri.slice(50,-1);
 
@@ -326,7 +235,7 @@ navigator.mediaDevices.enumerateDevices().then(gotDevices);
 var still_context = still_canvas.getContext("2d");
 
 button_get_curve.addEventListener("click", event => {
-  getCurve();
+  getCurveAbsolute();
 })
 
 

@@ -7,9 +7,9 @@ function main() {
   const still_canvas = document.getElementById("Still_Canvas");
   const diff_canvas = document.getElementById("Diff_Canvas");
   instruction_label = document.getElementById("Instructions");
-  raw_array_box = document.getElementById("rawArray");
+  // raw_array_box = document.getElementById("rawArray");
 
-  raw_array_box.value = new Date;
+  // raw_array_box.value = new Date;
 
 // Stops current source of stream
 function stopMediaTracks(stream) {
@@ -114,7 +114,7 @@ let derivativeCurve = derivative(curve);
 // Gary CRT
 CRT = garyCRT(derivativeCurve, timeArray);
 
-raw_array_box.value = curve;
+// raw_array_box.value = curve;
 
 }
 

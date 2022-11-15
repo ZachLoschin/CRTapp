@@ -9,6 +9,8 @@ function main() {
   instruction_label = document.getElementById("Instructions");
   raw_array_box = document.getElementById("rawArray");
 
+  raw_array_box.value = new Date;
+
 // Stops current source of stream
 function stopMediaTracks(stream) {
   stream.getTracks().forEach(track => {

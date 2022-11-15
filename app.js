@@ -8,6 +8,7 @@ function main() {
   const diff_canvas = document.getElementById("Diff_Canvas");
   instruction_label = document.getElementById("Instructions");
   raw_array_box = document.getElementById("rawArray");
+  time_array_box = document.getElementById("timeArray");
 
   raw_array_box.value = new Date;
 
@@ -84,7 +85,7 @@ async function getCurveAbsolute() {
     // Get average RGB
     let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
     instruction_label.innerHTML = ave;
-    await new Promise(r=> setTimeout(r, 200));
+    await new Promise(r=> setTimeout(r, 75));
 
     // Append to array
     curve.push(ave);
@@ -117,6 +118,7 @@ let derivativeCurve = derivative(curve);
 CRT = garyCRT(derivativeCurve, timeArray);
 
 raw_array_box.value = curve;
+time_array_box.value = timeArray;
 
 }
 

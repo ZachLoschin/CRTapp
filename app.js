@@ -11,6 +11,7 @@ function main() {
   time_array_box = document.getElementById("timeArray");
 
   raw_array_box.value = new Date;
+  time_array_box.value = new Date;
 
 // Stops current source of stream
 function stopMediaTracks(stream) {
@@ -58,24 +59,65 @@ async function getCurveAbsolute() {
 
   // Start instructions
   instruction_label.innerHTML = "Hold camera still above patients finger";
-  await new Promise(r => setTimeout(r, 2000));
-  instruction_label.innerHTML = "Press into finger in 3..";
-  await new Promise(r => setTimeout(r, 1000));
-  instruction_label.innerHTML = "2..";
-  await new Promise(r => setTimeout(r, 1000));
-  instruction_label.innerHTML = "1..";
-  await new Promise(r => setTimeout(r, 1000));
+  await new Promise(r => setTimeout(r, 10));
+
+  let timeInit = Date.now();
+  let timeCurrent = Date.now();
+  let timeTime = Date.now();
+
+  // Get two seconds of baseline data
+  while(timeCurrent - timeInit < 2000) {
+    // Get current time
+    timeCurrent = Date.now();
+    
+    // Get image
+    still_context.drawImage(video, 0, 0);
+
+    // Get average RGB
+      // let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
+      //instruction_label.innerHTML = ave;
+    await new Promise(r=> setTimeout(r, 20));
+
+    // Append to array
+      //curve.push(ave);
+    curve.push(still_context.getImageData(0, 0, 640, 480).data);
+    timeArray.push(timeCurrent-timeInit);
+
+      // console.log(ave);
+
+  }
 
   instruction_label.innerHTML = "Press into patient finger for 5 seconds!";
-  await new Promise(r=> setTimeout(r, 5000));
+  await new Promise(r=> setTimeout(r, 10));
+  timeTime = Date.now();
+
+   // Get two seconds of baseline data
+   while(timeCurrent - timeTime < 5000) {
+    // Get current time
+    timeCurrent = Date.now();
+    
+    // Get image
+    still_context.drawImage(video, 0, 0);
+
+    // Get average RGB
+      // let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
+      //instruction_label.innerHTML = ave;
+    await new Promise(r=> setTimeout(r, 20));
+
+    // Append to array
+      //curve.push(ave);
+    curve.push(still_context.getImageData(0, 0, 640, 480).data);
+    timeArray.push(timeCurrent-timeInit);
+
+      // console.log(ave);
+
+  }
 
   instruction_label.innerHTML = "Release in one second";
   await new Promise(r=> setTimeout(r, 10));
+  timeTime = Date.now();
 
-  let timeInit = Date.now()
-  let timeCurrent = Date.now()
-
-  while(timeCurrent - timeInit < 7000) {
+  while(timeCurrent - timeTime < 7000) {
     // Get current time
     timeCurrent = Date.now()
     
@@ -83,19 +125,27 @@ async function getCurveAbsolute() {
     still_context.drawImage(video, 0, 0);
 
     // Get average RGB
-    let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
-    instruction_label.innerHTML = ave;
-    await new Promise(r=> setTimeout(r, 75));
+      // let ave = GetAverageRGB(still_context.getImageData(0, 0, 640, 480).data)
+      //instruction_label.innerHTML = ave;
+    await new Promise(r=> setTimeout(r, 20));
 
     // Append to array
-    curve.push(ave);
+      //curve.push(ave);
+    curve.push(still_context.getImageData(0, 0, 640, 480).data);
     timeArray.push(timeCurrent-timeInit);
 
-    console.log(ave);
+      // console.log(ave);
 
   }
 
   instruction_label.innerHTML = "Test Complete!";
+  ave_array = [];
+
+  for(let i=0; i<curve.length; i++) {
+    ave_array.push(GetAverageRGB(curve[i]));
+  }
+
+  curve = ave_array;
 
   // Plotting raw
   var toPlot = {
@@ -116,6 +166,7 @@ let derivativeCurve = derivative(curve);
 
 // Gary CRT
 CRT = garyCRT(derivativeCurve, timeArray);
+console.log(CRT);
 
 raw_array_box.value = curve;
 time_array_box.value = timeArray;
@@ -151,7 +202,18 @@ function derivative(inpArray) {
 
   function garyCRT(deri, time) {
     // Slice the derivative array during the refill time zone
-    let detectionZone = deri.slice(50,-1);
+    let index = -1;
+
+    for(let i=0; i<time.length; i++) {
+      if(time[i]>7000) {
+        index = i;
+        break;
+      }
+    }
+
+    let detectionZone = deri.slice(index, -1);
+    let timeZone = time.slice(index, -1);
+
 
     // Detect the peak point (aka the minimum of of the array)
     let min = Math.min.apply(null, detectionZone);
@@ -176,7 +238,7 @@ function derivative(inpArray) {
       }
     }
 
-    return [start, end];
+    return [timeZone[start], timeZone[end]];
   }
 
 
